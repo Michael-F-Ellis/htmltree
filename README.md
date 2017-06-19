@@ -153,7 +153,31 @@ Python loops simplify the creation of many similar elements.
 ## Module help
 ```
 >>> help(E)
-
+class Element(builtins.object)
+ |  Generalized nested html element tree with recursive rendering
+ |  
+ |  Constructor arguments:
+ |      tagname : valid html tag name (string)
+ |  
+ |      attrs   : attributes (dict | None)
+ |                  keys must be valid attribute names (string)
+ |                  values must be (string | list of strings | dict of styles)
+ |  
+ |      content : (None | string | int | float | list of (strings/ints/floats and/or elements)
+ |                elements must have a 'render' method that returns valid html.
+ |                <style> tag gets special handling. You may pass the css as a dict of
+ |                the form {'selector': {'property':'value', ...}, ...}
+ |  
+ |  Public Members:
+ |      T : tagname
+ |      A : attribute dict
+ |      C : content
+ |  
+ |  Instance methods:
+ |      render(indent=-1) -- defaults to no indentation, no newlines
+ |                           indent >= 0 behaves according to the indented()
+ |                            function in this module.
+ |
  |  Helper functions (defined at module level):
  |  
  |      indented(contentstring, indent) -- applies indentation to rendered content
@@ -194,7 +218,7 @@ Python loops simplify the creation of many similar elements.
  |  
  |  Methods defined here:
  |  
- |  __init__(self, tagname, attrs={}, content=[])
+ |  __init__(self, tagname, attrs, content)
  |      Initialize self.  See help(type(self)) for accurate signature.
  |  
  |  render(self, indent=-1)
