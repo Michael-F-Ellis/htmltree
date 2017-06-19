@@ -149,6 +149,32 @@ Python loops simplify the creation of many similar elements.
 </body>
 >>> 
 ```
+### Cleaner syntax
+Supplying dicts and lists in arguments can be visually messy. To reduce the clutter you can take advantage of Python's args/kwargs syntax as shown below.
+```
+from htmltree import Element
+def E(tag, *content, **attrs):
+    if len(content) == 1 and content[0] is None:
+        content = None
+    else:
+        content = list(content)
+    return Element(tag, attrs, content)
+
+>>> divs = E('div', E('p'), E('div'), id="topdiv", style={'color':'red', 'margin':'10px'})
+>>> print(divs.render(0))
+<div style="color:red; margin:10px;" id="topdiv">
+  <p>
+  </p>
+  <div>
+  </div>
+</div>
+```
+The trick above will work for everything but the `<style>` tag. It needs a dictionary for the content, so it's probably best to create a separate wrapper for `style`.
+```
+def style(attrs, content):
+    return Element('style', attrs, content)
+```
+
 
 ## Module help
 ```
