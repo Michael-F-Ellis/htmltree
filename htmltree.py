@@ -22,20 +22,39 @@ Copyright 2017 Ellis & Grant, Inc.
 License: MIT License
 """
 # __pragma__('kwargs')
+
+def KWElement(tag, *content, **attrs):
+    """
+    It's recommended to import this function rather than the Element class it wraps.
+    This function's signature reduces the need to quote attribute names.
+    """
+    if len(content) == 1 and content[0] is None:
+        content = None
+    else:
+        content = list(content)
+    return Element(tag, attrs, content)
+
 class Element:
     """
-    Generalized nested html element tree with recursive rendering
+    General nested html element tree with recursive rendering
+
+    Note: Directly importing this class is deprecated (or at least not
+    recommended) because the arguments to this classes constructor are not in
+    the most convenient order. Import KWElement defined above instead.
 
     Constructor arguments:
         tagname : valid html tag name (string)
 
-        attrs   : attributes (dict | None)
+        attrs   : attributes (dict | dict-like object | None)
                     keys must be valid attribute names (string)
                     values must be (string | list of strings | dict of styles)
 
         content : (None | string | int | float | list of (strings/ints/floats and/or elements)
                   elements must have a 'render' method that returns valid html.
-                  <style> tag gets special handling. You may pass the css as a dict of
+
+                  None has a special meaning. It denotes a singleton tag, e.g. <meta> or <br/>
+
+                  The <style> tag gets special handling. You may pass the css as a dict of
                   the form {'selector': {'property':'value', ...}, ...}
 
     Public Members:
@@ -74,9 +93,9 @@ class Element:
     >>> doc.render()
     '<html><head></head><body style="background-color:black;"><h1>Title</h1><br/></body></html>'
 
-    >>> style = E('style', None, {'p.myclass': {'margin': '4px', 'font-color': 'blue'}})
+    >>> style = E('style', None, {'p.myclass': {'margin': '4px'}})
     >>> style.render()
-    '<style>p.myclass { margin:4px; font-color:blue; }</style>'
+    '<style>p.myclass { margin:4px; }</style>'
 
     >>> comment = E('!--', None, "This is out!")
     >>> comment.render()
@@ -91,17 +110,16 @@ class Element:
         ## Validate arguments
         assert isinstance(tagname, str)
         self.T = tagname.lower()
-        if tagname == '!--': ## HTML comment
+        if self.T == '!--': ## HTML comment
             attrs = None
             self.endtag = " -->"
         else:
             self.endtag = "</{}>".format(self.T)
 
-        assert isinstance(attrs, (dict, type(None)))
-        if tagname.lower() == 'style':
-            assert isinstance(content, (str, dict))
-        else:
-            assert isinstance(content, (list, str, type(None))) ## None means an 'empty' element with no closing tag
+        if not (attrs is None or hasattr(attrs, 'items')):
+            msg = "attrs must be a dict-like object or None"
+            raise ValueError(msg)
+
         self.A = attrs
         self.C = content
 
@@ -123,10 +141,10 @@ class Element:
                 elif isinstance(v,list):
                     _ = ' '.join(v)     ## must be list of strings
                     rlist.append(' {}="{}"'.format(a, _))
-                elif isinstance(v,dict) and a=='style':
+                elif a == 'style':
                     rlist.append(' {}="{}"'.format(a,renderInlineStyle(v)))
                 else:
-                    msg="Don't know what to with {}={}".format(a,v)
+                    msg="Don't know what to with attribute {}={}".format(a,v)
                     raise ValueError(msg)
 
         if self.C is None and self.T != "!--":
@@ -148,13 +166,11 @@ class Element:
             else:
                 cindent = indent + 1 if indent >= 0 else indent
                 for c in self.C:
-                    if isinstance(c, (str, int, float)):
-                        rlist.append(indented(c, cindent))
-                    elif hasattr(c, 'render'):
+                    if hasattr(c, 'render'):
                         rlist.append(c.render(cindent)) ## here's the recursion!
                     else:
-                        msg="Don't know what to do with content item {}".format(c)
-                        raise ValueError(msg)
+                        rlist.append(indented(str(c), cindent))
+
             closing = indented(self.endtag, indent)
         rlist.append(closing)
 
@@ -185,7 +201,7 @@ def indented(contentstring, indent=-1):
 
 def renderInlineStyle(d):
     """If d is a dict of styles, return a proper style string """
-    if isinstance(d, dict):
+    if hasattr(d, 'items'):
         style=[]
         for k,v in d.items():
             ## for convenience, convert underscores in keys to hyphens
@@ -193,30 +209,30 @@ def renderInlineStyle(d):
             style.append("{}:{};".format(kh, v))
         separator = ' '
         result = separator.join(style)
-    elif isinstance(d, str):
-        result = d
     else:
-        msg = "Cannot convert {} to style string".format(d)
-        raise TypeError(msg)
+        result = str(d)
+
     return result
 
 def renderCss(d, indent=-1):
-    """ If d is a dict of rulesets, render a string of CSS rulesets """
-    if not isinstance(d, dict):
+    """
+    If d is a dict (or dict-like object) of rulesets, render a string of CSS
+    rulesets.
+    """
+    if not hasattr(d, 'items'):
         msg = "Expected dictionary of CSS rulesets, got {}.".format(d)
         raise TypeError(msg)
     else:
         rulesetlist = []
         for selector, declaration in d.items():
-            #print("In renderCss with selector = {}".format(selector))
             if not isinstance(selector, str):
                 msg = "Expected selector string, got {}".format(selector)
                 raise TypeError(msg)
 
-            ruleset = " ".join([selector, '{',  renderInlineStyle(declaration), '}'])
+            ruleset = " ".join([selector, '{',
+                                renderInlineStyle(declaration), '}'])
             rulesetlist.append(indented(ruleset, indent))
-        #separator = '\n' if newlines else ' '
-        return ''.join(rulesetlist)
+        return ' '.join(rulesetlist)
 
 # __pragma__('nokwargs')
 
