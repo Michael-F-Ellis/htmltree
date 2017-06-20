@@ -52,7 +52,7 @@ class Element:
         content : (None | string | int | float | list of (strings/ints/floats and/or elements)
                   elements must have a 'render' method that returns valid html.
 
-                  None has a special meaning. It denotes a singleton tag, e.g. <meta> or <br/>
+                  None has a special meaning. It denotes a singleton tag, e.g. <meta> or <br>
 
                   The <style> tag gets special handling. You may pass the css as a dict of
                   the form {'selector': {'property':'value', ...}, ...}
@@ -88,10 +88,10 @@ class Element:
     >>> body = E('body', {'style':{'background-color':'black'}}, [E('h1', None, "Title")])
     >>> body.C.append(E('br', None, None))
     >>> body.render()
-    '<body style="background-color:black;"><h1>Title</h1><br/></body>'
+    '<body style="background-color:black;"><h1>Title</h1><br></body>'
     >>> doc.C.append(body)
     >>> doc.render()
-    '<html><head></head><body style="background-color:black;"><h1>Title</h1><br/></body></html>'
+    '<html><head></head><body style="background-color:black;"><h1>Title</h1><br></body></html>'
 
     >>> style = E('style', None, {'p.myclass': {'margin': '4px'}})
     >>> style.render()
@@ -103,7 +103,7 @@ class Element:
 
     >>> comment.C = [body]
     >>> comment.render()
-    '<!-- <body style="background-color:black;"><h1>Title</h1><br/></body> -->'
+    '<!-- <body style="background-color:black;"><h1>Title</h1><br></body> -->'
 
     """
     def __init__(self, tagname, attrs, content):
@@ -149,8 +149,7 @@ class Element:
 
         if self.C is None and self.T != "!--":
             ## It's a singleton tag. Close it accordingly.
-            self.endtag = "/>"
-            closing = self.endtag
+            closing = ">"
         else:
             ## Close the tag
             if self.T == "!--":
