@@ -1,9 +1,11 @@
-# Python htmltree module
+# Python htmltree project
 
 ## Create and manipulate HTML and CSS from the comfort of Python
-  * Easy to learn. One module, one class, two methods.
+  * Easy to learn. Consistent, simple syntax.
+  * Over 70 predefined tag functions.
+  * Create HTML on the fly or save as static files.
   * Flexible usage and easy extension. 
-  * Fully compatible with Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
+  * Run locally with CPython or as Javascript in the browser using Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
 
 ### Quick Start
 #### Open a Python interpreter and type or paste the following
@@ -108,6 +110,7 @@ doc = Html(
 ```
 That's short and clean and renders exactly the same html, but sacrifices ease of alteration later in the execution. Your choices should come down to whether you're creating static html or dynamic content based on information that's not available until run time.
 
+### Rolling your own
 The simplest possible extension is wrapping a frequently used tag to save a little typing. This is already done for you for all the wrapper functions in elementwrappers.py. But if you need something that's not defined it only takes two lines of code (not counting the import).
 ```
 from htmltree import KWElement
@@ -120,7 +123,8 @@ def Bar(**attrs):
     return KWElement('bar', None, **attrs)
 ```
 
-Wrapping common used fragments in a function can be useful, e.g. 
+### Bundling
+Wrapping commonly used fragments in a function can be useful, e.g. 
 ```
 def docheadbody():
     head = Head()
@@ -131,6 +135,7 @@ def docheadbody():
 >>> doc, head, body = docheadbody()
 ```
 
+### Looping
 Python loops simplify the creation of many similar elements.
 ```
 for id in ('one', 'two', 'three'):
@@ -155,13 +160,92 @@ for id in ('one', 'two', 'three'):
 </body>
 
 ```
+### Use with [*Transcrypt™*](https://transcrypt.org/)
+This project was designed from the ground up to be compatible with Transcrypt to help provide a pure Python development environment  for HTML/CSS on both sides of the client/server divide. You'll want to arrange for the two files (htmltree.py and elementwrapper.py) to be in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
+
+Other than that, all the functions should work the same as under CPython. If not, please file an issue so I can fix it!
+
 #### A small gotcha
 Did you notice the underscore in `H1("Hello, htmltree!", _class='myclass', id='myid')`? That's because `class` is a Python reserved word.  Prefixing it with an underscore avoids a syntax error. Class is the most common problem but you might also run into it with `for` as a label attribute. 
 
 To help deal with this, the render() function strips off leading and trailing underscores in attribute names. It also replaces internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret ` ... data-role="magic"` as a subtraction expression. Use ```data_role="magic"``` instead.
 
 
-
-
+## List of wrapper functions
+```
+>>> grep def elementwrappers.py
+def Html(*content, **attrs):
+def Head(*content, **attrs):
+def Body(*content, **attrs):
+def Link(**attrs):
+def Meta(**attrs):
+def Title(*content, **attrs):
+def Style(**content):
+def H1(*content, **attrs):
+def H2(*content, **attrs):
+def H3(*content, **attrs):
+def H4(*content, **attrs):
+def H5(*content, **attrs):
+def H6(*content, **attrs):
+def Blockquote(*content, **attrs):
+def Div(*content, **attrs):
+def Hr(**attrs):
+def Li(*content, **attrs):
+def Ol(*content, **attrs):
+def P(*content, **attrs):
+def Pre(*content, **attrs):
+def Ul(*content, **attrs):
+def A(*content, **attrs):
+def B(*content, **attrs):
+def Br(**attrs):
+def Cite(*content, **attrs):
+def Code(*content, **attrs):
+def Em(*content, **attrs):
+def I(*content, **attrs):
+def S(*content, **attrs):
+def Samp(*content, **attrs):
+def Small(*content, **attrs):
+def Span(*content, **attrs):
+def Strong(*content, **attrs):
+def Sub(*content, **attrs):
+def Sup(*content, **attrs):
+def U(*content, **attrs):
+def Area(**attrs):
+def Audio(*content, **attrs):
+def Img(**attrs):
+def Map(*content, **attrs):
+def Track(**attrs):
+def Video(*content, **attrs):
+def Embed(**attrs):
+def Object(*content, **attrs):
+def Param(**attrs):
+def Source(**attrs):
+def Canvas(*content, **attrs):
+def Noscript(*content, **attrs):
+def Script(*content, **attrs):
+def Caption(*content, **attrs):
+def Col(**attrs):
+def Table(*content, **attrs):
+def Tbody(*content, **attrs):
+def Td(*content, **attrs):
+def Tfoot(*content, **attrs):
+def Th(*content, **attrs):
+def Thead(*content, **attrs):
+def Tr(*content, **attrs):
+def Button(*content, **attrs):
+def Datalist(*content, **attrs):
+def Fieldset(*content, **attrs):
+def Form(*content, **attrs):
+def Input(**attrs):
+def Label(*content, **attrs):
+def Legend(*content, **attrs):
+def Meter(*content, **attrs):
+def Optgroup(*content, **attrs):
+def Option(*content, **attrs):
+def Output(*content, **attrs):
+def Progress(*content, **attrs):
+def Select(*content, **attrs):
+def Textarea(*content, **attrs):
+```
 
 
