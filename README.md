@@ -5,40 +5,45 @@
   * Flexible usage and easy extension. 
   * Fully compatible with Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
 
-### Quick start -- open a Python interpreter and type or paste the following
+### Quick Start
+#### Open a Python interpreter and type or paste the following
 ```
->>> from htmltree import Element as E
->>> head = E('head', {}, [])
->>> body = E('body', {}, [])
->>> doc = E('html', {}, content=[head, body])
+>>> from elementwrappers import *
+>>> head = Head()
+>>> body = Body()
+>>> doc = Html(head, body)
+```
+#### Render and print the HTML
+```
 >>> print(doc.render(0))
-
 <html>
   <head>
   </head>
   <body>
   </body>
 </html>
-
->>> ## Add some attributes and content
->>> who = E('meta', dict(name="author", content="Your Name Here"), None)
+```
+#### Now add some metadata, styling and text ...
+```
+>>> who = Meta(name="author",content="Your Name Here")
 >>> head.C.append(who)
->>> body.A.update({'style':{'background-color':'black'}})
->>> body.C.append(E('h1',{'class':'myclass', 'id':'myid'}, ["Hello htmltree!"]))
+>>> body.A.update(dict(style={'background-color':'black'}))
+>>> body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
+```
+#### and print the result.
 >>> print(doc.render(0))
-
 <html>
   <head>
-    <meta name="author" content="Your Name Here"/>
+    <meta content="Your Name Here" name="author">
   </head>
   <body style="background-color:black;">
     <h1 id="myid" class="myclass">
-      Hello htmltree!
+      Hello, htmltree!
     </h1>
   </body>
 </html>
-
 ```
+
 ## Explanations
 The Element class (which we've shortened to 'E') can represent and render any HTML element. The constructor signature is 
 
