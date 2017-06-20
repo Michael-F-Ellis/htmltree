@@ -1,9 +1,11 @@
-# Python htmltree module
+# Python htmltree project
 
 ## Create and manipulate HTML and CSS from the comfort of Python
-  * Easy to learn. One module, one class, two methods.
+  * Easy to learn. Consistent, simple syntax.
+  * Over 70 predefined tag functions.
+  * Create HTML on the fly or save as static files.
   * Flexible usage and easy extension. 
-  * Fully compatible with Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
+  * Run locally with CPython or as Javascript in the browser using Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
 
 ### Quick Start
 #### Open a Python interpreter and type or paste the following
@@ -31,6 +33,7 @@
 >>> body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
 ```
 #### and print the result.
+```
 >>> print(doc.render(0))
 <html>
   <head>
@@ -43,41 +46,38 @@
   </body>
 </html>
 ```
+## Discussion
+Importing * from elementwrappers.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(elementwrappers)` from the command line of a Python interactive session or look futher down on this page for listing. The function's names and arguments follow simple and consistent conventions.
 
-## Explanations
-The Element class (which we've shortened to 'E') can represent and render any HTML element. The constructor signature is 
-
+- Functions are named by tag with initial caps, e.g. `Html()`
+- The signature for non-empty tags is `Tagname(*content, **attrs)`
+- The signature for empty tags is `Tagname(**attrs)` (Empty refers to elements that enclose no content and need no closing tag.)
+- The <style> tag is the only exception. It's signature is `Style(**content)`.  This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
+- If you need to set attrs on a style element, do it in a secondary call as shown in the doctest below.
 ```
-Element(tag, attrs, content)
+          >>> style = Style(body=dict(margin='4px'), p={'color':'blue'})
+          >>> style.A.update({'type':'text/css'})
+          >>> style.render()
+          '<style type="text/css">body { margin:4px; } p { color:blue; }</style>' 
 ```
-* `tag` is any valid tag name, e.g. 'div', 'span', ...
-* `attrs` should be a dictionary of valid attribute names and values, e.g. {'class':'myclass', 'id':'myid', ... } 
-* `content` is what goes between the opening and closing tag. It should be either None or a list containing any mixture of Elements and strings. 
-  * Passing None as the content argument has a special meaning. It tells the render() method that the tag is a singleton with no content or closing tag, e.g. `<meta>` or `<br>`.
-
-### Special cases
-The `style` attribute and `<style>` tag are both handled correctly if you pass them as a nested dictionary, e.g.
+The design pattern for `htmltree` is "as simple as possible but not simpler." Using built-in Python objects, dicts and lists, means that all the familiar methods of those objects are available when manipulating trees of Elements. Notice, for instance, the use of `update` and `append` in the Quick start examples. 
 ```
-{'style':{'background-color':'black', ...}}
+>>> body.A.update(dict(style={'background-color':'black'}))
+>>> body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
 ```
-for an inline style attribute, and
-
-```
->>> mystyle = E('style', None, {'p.myclass': {'margin': '4px', 'font-color': 'blue'}})
->>> print(mystyle.render(0))
-
-<style>
-p.myclass { margin:4px; font-color:blue; }
-</style>
-
-```
-The nested dicts may have as many items as you desire, i.e. no need for separate CSS files! Just code it Python along with the HTML.
+But wait a minute! What are 'body.A' and 'body.C'? Read on ...
 
 ### Public members
-You can access and modify the attributes and content of an Element `el` as `el.A` and `el.C` respectively. The tagname is also available as `el.T` though this is generally not so useful as the other two.
+You can access and modify the attributes and content of an Element `el` as `el.A` and `el.C` respectively. The tagname is also available as `el.T` though this is generally not so useful as the other two. 
+
+The attribute member, `el.A` is an ordinary Python dictionary containing whatever keyword arguments were passed when the element was created. You can modify it with `update()` as shown in the Quick Start example or use any of the other dictionary methods on it. You can also replace it entirely with any dict-like object that has an `items()` method that behaves like dict.items()
+
+The content member, `el.C` is normally a Python list. It contains all the stuff that gets rendered between the closing and ending tags of an element. The list may hold an arbitrary mix of strings, ints, float, and objects. In normal usage, the objects are of type `htmltree.Element`. This is the element type returned by all the functions in elementwrappers.py. You can use all the normal Python list methods (append, insert, etc) to manipulate the list.
+
+(If you insert objects (other than those listed above), they should have a `render(indent=-1)` method that returns valid HTML with the same indentation conventions as the htmltree.Element.render method described in the next section.)
 
 ### Rendering
-The render method emits HMTL. In the examples above, we've called it as doc.render(0) to display the entire document tree in indented form. Calling it with no arguments emits the HTML as a single line with no breaks or spaces. For example
+The render method emits HMTL. In the examples above, we've called it as doc.render(0) to display the entire document tree in indented form. Calling it with no arguments emits the HTML as a single line with no breaks or spaces. Values > 0 increase the indentations by 2 spaces * the value.
 ```
 >>> print(head.render())
 <head><meta name="author" content="Your Name Here"/></head>
@@ -94,166 +94,158 @@ The render method emits HMTL. In the examples above, we've called it as doc.rend
     <meta name="author" content="Your Name Here"/>
   </head>
 ```
-Values > 0 increase the indentations by 2 spaces * the value.
+
 
 ## Using and extending
-The design pattern for `htmltree` is "as simple as possible but not simpler." Using built-in Python objects, dicts and lists, means that all the familiar methods of those objects are available when manipulating trees of Elements. Notice the use of `update` and `append` in the Quick start examples. 
+
+In the Quick Start example, we created elements and assigned them to variables so we could alter their content later. However, we could also have created the example by writing it out all at once.
+
 ```
->>> body.A.update({'style':{'background-color':'black'}})
->>> body.C.append(E('h1',{'class':'myclass', 'id':'myid'}, ["Hello htmltree!"]))
+doc = Html(
+        Head(
+          Meta(name="author",content="Your Name Here")),
+         Body(
+           H1("Hello, htmltree!",
+               id="myid", _class="myclass")))
+```
+That's short and clean and renders exactly the same html, but sacrifices ease of alteration later in the execution. Your choices should come down to whether you're creating static html or dynamic content based on information that's not available until run time.
+
+### Rolling your own
+The simplest possible extension is wrapping a frequently used tag to save a little typing. This is already done for you for all the wrapper functions in elementwrappers.py. But if you need something that's not defined it only takes two lines of code (not counting the import).
+```
+from htmltree import KWElement
+def Foo(*content, **attrs):
+    return KWElement('foo', *content, **wrappers)
+```
+For an empty tag element, omit the content arg and pass None to KWElement().
+```
+def Bar(**attrs):
+    return KWElement('bar', None, **attrs)
 ```
 
-The simplest possible extension is wrapping a frequently used tag to save a little typing.
-```
-def div(attrs, content):
-    return E('div', attrs, content)
-
->>> el = div({},["Help! I'm trapped in a div."])
->>> print(el.render(0))
-<div>
-  Help! I'm trapped in a div.
-</div>
-```
-Similarly, we could have written a reusable doc outline to create the first part of our example.
+### Bundling
+Wrapping commonly used fragments in a function can be useful, e.g. 
 ```
 def docheadbody():
-    head = E('head', {}, [])
-    body = E('body', {}, [])
-    doc = E('html', {}, [head, body])
+    head = Head()
+    body = Body()
+    doc = Html(head, body)
     return doc, head, body
     
 >>> doc, head, body = docheadbody()
->>> print(doc.render(0))
-<html>
-  <head>
-  </head>
-  <body>
-  </body>
-</html>
 ```
 
+### Looping
 Python loops simplify the creation of many similar elements.
 ```
->>> for id in ('one', 'two', 'three'):
-...     attrs = dict(id=id)
-...     content = "Help! I'm trapped in div {}.".format(id)
-...     body.C.append(div(attrs, content))
-...     
+for id in ('one', 'two', 'three'):
+     attrs = dict(id=id)
+     content = "Help! I'm trapped in div {}.".format(id)
+     body.C.append(Div(attrs, content))
+    
 >>> print(body.render(0))
-
 <body>
-  <div id="one">
-  Help! I'm trapped in div one.
+  <div>
+    {'id': 'one'}
+    Help! I'm trapped in div one.
   </div>
-  <div id="two">
-  Help! I'm trapped in div two.
+  <div>
+    {'id': 'two'}
+    Help! I'm trapped in div two.
   </div>
-  <div id="three">
-  Help! I'm trapped in div three.
+  <div>
+    {'id': 'three'}
+    Help! I'm trapped in div three.
   </div>
 </body>
->>> 
-```
-### Cleaner syntax
-Supplying dicts and lists in arguments can be visually messy. To reduce the clutter you can take advantage of Python's args/kwargs syntax as shown below.
-```
-from htmltree import Element
-def E(tag, *content, **attrs):
-    if len(content) == 1 and content[0] is None:
-        content = None
-    else:
-        content = list(content)
-    return Element(tag, attrs, content)
 
->>> divs = E('div', E('p'), E('div'), id="topdiv", style={'color':'red', 'margin':'10px'})
->>> print(divs.render(0))
-<div style="color:red; margin:10px;" id="topdiv">
-  <p>
-  </p>
-  <div>
-  </div>
-</div>
 ```
-The trick above will work for everything but the `<style>` tag. It needs a dictionary for the content, so it's probably best to create a separate wrapper for `style`.
-```
-def style(attrs, content):
-    return Element('style', attrs, content)
-```
+### Use with [*Transcrypt™*](https://transcrypt.org/)
+This project was designed from the ground up to be compatible with Transcrypt to help provide a pure Python development environment  for HTML/CSS on both sides of the client/server divide. You'll want to arrange for the two files (htmltree.py and elementwrapper.py) to be in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
+
+Other than that, all the functions should work the same as under CPython. If not, please file an issue so I can fix it!
+
+#### A small gotcha
+Did you notice the underscore in `H1("Hello, htmltree!", _class='myclass', id='myid')`? That's because `class` is a Python reserved word.  Prefixing it with an underscore avoids a syntax error. Class is the most common problem but you might also run into it with `for` as a label attribute. 
+
+To help deal with this, the render() function strips off leading and trailing underscores in attribute names. It also replaces internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret ` ... data-role="magic"` as a subtraction expression. Use ```data_role="magic"``` instead.
 
 
-## Module help
+## List of wrapper functions
 ```
->>> help(E)
-class Element(builtins.object)
- |  Generalized nested html element tree with recursive rendering
- |  
- |  Constructor arguments:
- |      tagname : valid html tag name (string)
- |  
- |      attrs   : attributes (dict | None)
- |                  keys must be valid attribute names (string)
- |                  values must be (string | list of strings | dict of styles)
- |  
- |      content : (None | string | int | float | list of (strings/ints/floats and/or elements)
- |                elements must have a 'render' method that returns valid html.
- |                <style> tag gets special handling. You may pass the css as a dict of
- |                the form {'selector': {'property':'value', ...}, ...}
- |  
- |  Public Members:
- |      T : tagname
- |      A : attribute dict
- |      C : content
- |  
- |  Instance methods:
- |      render(indent=-1) -- defaults to no indentation, no newlines
- |                           indent >= 0 behaves according to the indented()
- |                            function in this module.
- |
- |  Helper functions (defined at module level):
- |  
- |      indented(contentstring, indent) -- applies indentation to rendered content
- |  
- |      renderstyle(d) -- Special handline for inline style attributes.
- |                        d is a dictionary of style definitions
- |  
- |      renderCss(d, indent=-1) -- Special handling for <style> tag
- |                                 d is a dict of CSS rulesets
- |  
- |  Doctests:
- |  >>> E = Element
- |  >>> doc = E('html', None, [])
- |  >>> doc.render()
- |  '<html></html>'
- |  >>> doc.C.append(E('head', None, []))
- |  >>> doc.render()
- |  '<html><head></head></html>'
- |  >>> body = E('body', {'style':{'background-color':'black'}}, [E('h1', None, "Title")])
- |  >>> body.C.append(E('br', None, None))
- |  >>> body.render()
- |  '<body style="background-color:black;"><h1>Title</h1><br/></body>'
- |  >>> doc.C.append(body)
- |  >>> doc.render()
- |  '<html><head></head><body style="background-color:black;"><h1>Title</h1><br/></body></html>'
- |  
- |  >>> style = E('style', None, {'p.myclass': {'margin': '4px', 'font-color': 'blue'}})
- |  >>> style.render()
- |  '<style>p.myclass { margin:4px; font-color:blue; }</style>'
- |  
- |  >>> comment = E('!--', None, "This is out!")
- |  >>> comment.render()
- |  '<!-- This is out! -->'
- |  
- |  >>> comment.C = [body]
- |  >>> comment.render()
- |  '<!-- <body style="background-color:black;"><h1>Title</h1><br/></body> -->'
- |  
- |  Methods defined here:
- |  
- |  __init__(self, tagname, attrs, content)
- |      Initialize self.  See help(type(self)) for accurate signature.
- |  
- |  render(self, indent=-1)
- |      Recursively generate html
- |  
- ```
+>>> grep def elementwrappers.py
+def Html(*content, **attrs):
+def Head(*content, **attrs):
+def Body(*content, **attrs):
+def Link(**attrs):
+def Meta(**attrs):
+def Title(*content, **attrs):
+def Style(**content):
+def H1(*content, **attrs):
+def H2(*content, **attrs):
+def H3(*content, **attrs):
+def H4(*content, **attrs):
+def H5(*content, **attrs):
+def H6(*content, **attrs):
+def Blockquote(*content, **attrs):
+def Div(*content, **attrs):
+def Hr(**attrs):
+def Li(*content, **attrs):
+def Ol(*content, **attrs):
+def P(*content, **attrs):
+def Pre(*content, **attrs):
+def Ul(*content, **attrs):
+def A(*content, **attrs):
+def B(*content, **attrs):
+def Br(**attrs):
+def Cite(*content, **attrs):
+def Code(*content, **attrs):
+def Em(*content, **attrs):
+def I(*content, **attrs):
+def S(*content, **attrs):
+def Samp(*content, **attrs):
+def Small(*content, **attrs):
+def Span(*content, **attrs):
+def Strong(*content, **attrs):
+def Sub(*content, **attrs):
+def Sup(*content, **attrs):
+def U(*content, **attrs):
+def Area(**attrs):
+def Audio(*content, **attrs):
+def Img(**attrs):
+def Map(*content, **attrs):
+def Track(**attrs):
+def Video(*content, **attrs):
+def Embed(**attrs):
+def Object(*content, **attrs):
+def Param(**attrs):
+def Source(**attrs):
+def Canvas(*content, **attrs):
+def Noscript(*content, **attrs):
+def Script(*content, **attrs):
+def Caption(*content, **attrs):
+def Col(**attrs):
+def Table(*content, **attrs):
+def Tbody(*content, **attrs):
+def Td(*content, **attrs):
+def Tfoot(*content, **attrs):
+def Th(*content, **attrs):
+def Thead(*content, **attrs):
+def Tr(*content, **attrs):
+def Button(*content, **attrs):
+def Datalist(*content, **attrs):
+def Fieldset(*content, **attrs):
+def Form(*content, **attrs):
+def Input(**attrs):
+def Label(*content, **attrs):
+def Legend(*content, **attrs):
+def Meter(*content, **attrs):
+def Optgroup(*content, **attrs):
+def Option(*content, **attrs):
+def Output(*content, **attrs):
+def Progress(*content, **attrs):
+def Select(*content, **attrs):
+def Textarea(*content, **attrs):
+```
+
 
