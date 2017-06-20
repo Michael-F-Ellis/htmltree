@@ -31,6 +31,7 @@
 >>> body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
 ```
 #### and print the result.
+```
 >>> print(doc.render(0))
 <html>
   <head>
@@ -43,6 +44,24 @@
   </body>
 </html>
 ```
+## Discussion
+Importing * from elementwrappers.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(elementwrappers)` from the command line of a Python interactive session or look futher down on this page for listing. The function's names and arguments follow simple and consistent conventions.
+
+    * Functions are named by tag with initial caps, e.g. Html()
+    * The signature for non-empty tags is Tagname(*content, **attrs)
+    * The signature for empty tags is Tagname(**attrs)
+      * Empty refers to elements that enclose no content and need no closing tag.
+
+    * The <style> tag is the only exception. It's signature is Style(**content). 
+      * This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
+
+      * If you need to set attrs on a style element, do it in a secondary call as shown in the doctest below.
+      ```
+          >>> style = Style(body=dict(margin='4px'), p={'color':'blue'})
+          >>> style.A.update({'type':'text/css'})
+          >>> style.render()
+          '<style type="text/css">body { margin:4px; } p { color:blue; }</style>' 
+      ```
 
 ## Explanations
 The Element class (which we've shortened to 'E') can represent and render any HTML element. The constructor signature is 
