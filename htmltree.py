@@ -133,7 +133,13 @@ class Element:
         ## Render the attributes
         if self.A is not None:
             for a, v in self.A.items():
+                ## for convenience, convert underscores in keys to '-'.
+                ## and remove any leading '-'. This allows us to specify
+                ## hyphenated attr names, like 'data-role' with data_role to avoid
+                ## needing quotes and allows the use of reserved Python words like 'class' by
+                ## prefixing (or suffixing) them with underscores, e.g. _class.
                 a = a.replace('_', '-') ## replace underscores with hyphens
+                a = a.strip('-')
                 if isinstance(v, str):
                     rlist.append(' {}="{}"'.format(a,v))
                 elif v is None:
@@ -203,8 +209,9 @@ def renderInlineStyle(d):
     if hasattr(d, 'items'):
         style=[]
         for k,v in d.items():
-            ## for convenience, convert underscores in keys to hyphens
+            ## See note in Element.render() about underscore replacement.
             kh = k.replace('_', '-')
+            kh = kh.strip('-')
             style.append("{}:{};".format(kh, v))
         separator = ' '
         result = separator.join(style)

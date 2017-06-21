@@ -22,8 +22,8 @@ Author: Mike Ellis
 Copyright 2017 Ellis & Grant, Inc.
 License: MIT
 """
-import doctest
 from htmltree import Element, KWElement
+## __pragma__('kwargs')
 
 #######################################################################
 ## Obsolete and Deprecated Elements.
@@ -678,7 +678,11 @@ def Textarea(*content, **attrs):
 ## Web Components (Experimental. Omitted for now.)
 #######################################################################
 
+## __pragma__('nokwargs')
 
-
+# __pragma__ ('skip')
 if __name__ == '__main__':
+    import doctest
     doctest.testmod()
+# __pragma__ ('noskip')
+
