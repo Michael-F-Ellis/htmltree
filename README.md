@@ -47,12 +47,12 @@
 </html>
 ```
 ## Discussion
-Importing * from elementwrappers.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(elementwrappers)` from the command line of a Python interactive session or look futher down on this page for listing. The function's names and arguments follow simple and consistent conventions.
+Importing * from elementwrappers.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(elementwrappers)` from the command line of a Python interactive session or look futher down on this page for listing. The function names and arguments follow simple and consistent conventions.
 
 - Functions are named by tag with initial caps, e.g. `Html()`
 - The signature for non-empty tags is `Tagname(*content, **attrs)`
 - The signature for empty tags is `Tagname(**attrs)` (Empty refers to elements that enclose no content and need no closing tag.)
-- The <style> tag is the only exception. It's signature is `Style(**content)`.  This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
+- The <style> tag is the only exception. Its signature is `Style(**content)`.  This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
 - If you need to set attrs on a style element, do it in a secondary call as shown in the doctest below.
 ```
           >>> style = Style(body=dict(margin='4px'), p={'color':'blue'})
@@ -139,33 +139,28 @@ def docheadbody():
 Python loops simplify the creation of many similar elements.
 ```
 for id in ('one', 'two', 'three'):
-     attrs = dict(id=id)
      content = "Help! I'm trapped in div {}.".format(id)
-     body.C.append(Div(attrs, content))
+     body.C.append(Div(content, id=id))
     
 >>> print(body.render(0))
 <body>
-  <div>
-    {'id': 'one'}
+  <div id="one">
     Help! I'm trapped in div one.
   </div>
-  <div>
-    {'id': 'two'}
+  <div id="two">
     Help! I'm trapped in div two.
   </div>
-  <div>
-    {'id': 'three'}
+  <div id="three">
     Help! I'm trapped in div three.
   </div>
 </body>
-
 ```
 ### Use with [*Transcrypt™*](https://transcrypt.org/)
 This project was designed from the ground up to be compatible with Transcrypt to help provide a pure Python development environment  for HTML/CSS on both sides of the client/server divide. You'll want to arrange for the two files (htmltree.py and elementwrapper.py) to be in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
 
 Other than that, all the functions should work the same as under CPython. If not, please file an issue so I can fix it!
 
-#### A small gotcha
+### A small gotcha
 Did you notice the underscore in `H1("Hello, htmltree!", _class='myclass', id='myid')`? That's because `class` is a Python reserved word.  Prefixing it with an underscore avoids a syntax error. Class is the most common problem but you might also run into it with `for` as a label attribute. 
 
 To help deal with this, the render() function strips off leading and trailing underscores in attribute names. It also replaces internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret ` ... data-role="magic"` as a subtraction expression. Use ```data_role="magic"``` instead.
