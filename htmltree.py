@@ -212,7 +212,9 @@ def indented(contentstring, indent=-1):
 
 def renderInlineStyle(d):
     """If d is a dict of styles, return a proper style string """
-    if hasattr(d, 'items'):
+    if isinstance(d, (str, int, float)):
+        result = str(d)
+    else:
         style=[]
         for k,v in d.items():
             ## See note in HtmlElement.render() about underscore replacement.
@@ -221,9 +223,6 @@ def renderInlineStyle(d):
             style.append("{}:{};".format(kh, v))
         separator = ' '
         result = separator.join(style)
-    else:
-        result = str(d)
-
     return result
 
 def renderCss(d, indent=-1):
