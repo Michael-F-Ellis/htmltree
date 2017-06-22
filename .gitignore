@@ -145,7 +145,7 @@ ENV/
 # Rope project settings
 .ropeproject
 
-# NearlyPurePythonWebAppDemo directories for generated files
+# directories for generated files
 __javascript__/
 __pycache__/
 __html__/
