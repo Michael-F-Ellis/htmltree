@@ -10,7 +10,7 @@
 ### Quick Start
 #### Open a Python interpreter and type or paste the following
 ```
->>> from elementwrappers import *
+>>> from htmltree import *
 >>> head = Head()
 >>> body = Body()
 >>> doc = Html(head, body)
@@ -47,7 +47,7 @@
 </html>
 ```
 ## Discussion
-Importing * from elementwrappers.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(elementwrappers)` from the command line of a Python interactive session or look futher down on this page for listing. The function names and arguments follow simple and consistent conventions.
+Importing * from htmltree.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(htmltree)` from the command line of a Python interactive session or look futher down on this page for listing. The function names and arguments follow simple and consistent conventions.
 
 - Functions are named by tag with initial caps, e.g. `Html()`
 - The signature for non-empty tags is `Tagname(*content, **attrs)`
@@ -72,7 +72,7 @@ You can access and modify the attributes and content of an Element `el` as `el.A
 
 The attribute member, `el.A` is an ordinary Python dictionary containing whatever keyword arguments were passed when the element was created. You can modify it with `update()` as shown in the Quick Start example or use any of the other dictionary methods on it. You can also replace it entirely with any dict-like object that has an `items()` method that behaves like dict.items()
 
-The content member, `el.C` is normally a Python list. It contains all the stuff that gets rendered between the closing and ending tags of an element. The list may hold an arbitrary mix of strings, ints, float, and objects. In normal usage, the objects are of type `htmltree.Element`. This is the element type returned by all the functions in elementwrappers.py. You can use all the normal Python list methods (append, insert, etc) to manipulate the list.
+The content member, `el.C` is normally a Python list. It contains all the stuff that gets rendered between the closing and ending tags of an element. The list may hold an arbitrary mix of strings, ints, float, and objects. In normal usage, the objects are of type `htmltree.Element`. This is the element type returned by all the functions in htmltree.py. You can use all the normal Python list methods (append, insert, etc) to manipulate the list.
 
 (If you insert objects (other than those listed above), they should have a `render(indent=-1)` method that returns valid HTML with the same indentation conventions as the htmltree.Element.render method described in the next section.)
 
@@ -111,7 +111,7 @@ doc = Html(
 That's short and clean and renders exactly the same html, but sacrifices ease of alteration later in the execution. Your choices should come down to whether you're creating static html or dynamic content based on information that's not available until run time.
 
 ### Rolling your own
-The simplest possible extension is wrapping a frequently used tag to save a little typing. This is already done for you for all the wrapper functions in elementwrappers.py. But if you need something that's not defined it only takes two lines of code (not counting the import).
+The simplest possible extension is wrapping a frequently used tag to save a little typing. This is already done for you for all the wrapper functions in htmltree.py. But if you need something that's not defined it only takes two lines of code (not counting the import).
 ```
 from htmltree import KWElement
 def Foo(*content, **attrs):
@@ -156,7 +156,7 @@ for id in ('one', 'two', 'three'):
 </body>
 ```
 ### Use with [*Transcrypt™*](https://transcrypt.org/)
-This project was designed from the ground up to be compatible with Transcrypt to help provide a pure Python development environment  for HTML/CSS on both sides of the client/server divide. You'll want to arrange for the two files (htmltree.py and elementwrapper.py) to be in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
+This project was designed from the ground up to be compatible with Transcrypt to help provide a pure Python development environment  for HTML/CSS on both sides of the client/server divide. You'll want to arrange for the htmltree.py file to be in or symbolically linked in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
 
 Other than that, all the functions should work the same as under CPython. If not, please file an issue so I can fix it!
 
@@ -168,79 +168,91 @@ To help deal with this, the render() function strips off leading and trailing un
 
 ## List of wrapper functions
 ```
->>> grep def elementwrappers.py
-def Html(*content, **attrs):
-def Head(*content, **attrs):
-def Body(*content, **attrs):
-def Link(**attrs):
-def Meta(**attrs):
-def Title(*content, **attrs):
-def Style(**content):
-def H1(*content, **attrs):
-def H2(*content, **attrs):
-def H3(*content, **attrs):
-def H4(*content, **attrs):
-def H5(*content, **attrs):
-def H6(*content, **attrs):
-def Blockquote(*content, **attrs):
-def Div(*content, **attrs):
-def Hr(**attrs):
-def Li(*content, **attrs):
-def Ol(*content, **attrs):
-def P(*content, **attrs):
-def Pre(*content, **attrs):
-def Ul(*content, **attrs):
-def A(*content, **attrs):
-def B(*content, **attrs):
-def Br(**attrs):
-def Cite(*content, **attrs):
-def Code(*content, **attrs):
-def Em(*content, **attrs):
-def I(*content, **attrs):
-def S(*content, **attrs):
-def Samp(*content, **attrs):
-def Small(*content, **attrs):
-def Span(*content, **attrs):
-def Strong(*content, **attrs):
-def Sub(*content, **attrs):
-def Sup(*content, **attrs):
-def U(*content, **attrs):
-def Area(**attrs):
-def Audio(*content, **attrs):
-def Img(**attrs):
-def Map(*content, **attrs):
-def Track(**attrs):
-def Video(*content, **attrs):
-def Embed(**attrs):
-def Object(*content, **attrs):
-def Param(**attrs):
-def Source(**attrs):
-def Canvas(*content, **attrs):
-def Noscript(*content, **attrs):
-def Script(*content, **attrs):
-def Caption(*content, **attrs):
-def Col(**attrs):
-def Table(*content, **attrs):
-def Tbody(*content, **attrs):
-def Td(*content, **attrs):
-def Tfoot(*content, **attrs):
-def Th(*content, **attrs):
-def Thead(*content, **attrs):
-def Tr(*content, **attrs):
-def Button(*content, **attrs):
-def Datalist(*content, **attrs):
-def Fieldset(*content, **attrs):
-def Form(*content, **attrs):
-def Input(**attrs):
-def Label(*content, **attrs):
-def Legend(*content, **attrs):
-def Meter(*content, **attrs):
-def Optgroup(*content, **attrs):
-def Option(*content, **attrs):
-def Output(*content, **attrs):
-def Progress(*content, **attrs):
-def Select(*content, **attrs):
-def Textarea(*content, **attrs):
+Html(*content, **attrs):
+Head(*content, **attrs):
+Body(*content, **attrs):
+Link(**attrs):
+Meta(**attrs):
+Title(*content, **attrs):
+Style(**content):
+Address(*content, **attrs):
+Article(*content, **attrs):
+Aside(*content, **attrs):
+Footer(*content, **attrs):
+Header(*content, **attrs):
+H1(*content, **attrs):
+H2(*content, **attrs):
+H3(*content, **attrs):
+H4(*content, **attrs):
+H5(*content, **attrs):
+H6(*content, **attrs):
+Nav(*content, **attrs):
+Section(*content, **attrs):
+Blockquote(*content, **attrs):
+Dd(*content, **attrs):
+Div(*content, **attrs):
+Dl(*content, **attrs):
+Dt(*content, **attrs):
+Figcaption(*content, **attrs):
+Figure(*content, **attrs):
+Hr(**attrs):
+Li(*content, **attrs):
+Main(*content, **attrs):
+Ol(*content, **attrs):
+P(*content, **attrs):
+Pre(*content, **attrs):
+Ul(*content, **attrs):
+A(*content, **attrs):
+B(*content, **attrs):
+Br(**attrs):
+Cite(*content, **attrs):
+Code(*content, **attrs):
+Em(*content, **attrs):
+I(*content, **attrs):
+S(*content, **attrs):
+Samp(*content, **attrs):
+Small(*content, **attrs):
+Span(*content, **attrs):
+Strong(*content, **attrs):
+Sub(*content, **attrs):
+Sup(*content, **attrs):
+U(*content, **attrs):
+Area(**attrs):
+Audio(*content, **attrs):
+Img(**attrs):
+Map(*content, **attrs):
+Track(**attrs):
+Video(*content, **attrs):
+Embed(**attrs):
+Object(*content, **attrs):
+Param(**attrs):
+Source(**attrs):
+Canvas(*content, **attrs):
+Noscript(*content, **attrs):
+Script(*content, **attrs):
+Caption(*content, **attrs):
+Col(**attrs):
+Table(*content, **attrs):
+Tbody(*content, **attrs):
+Td(*content, **attrs):
+Tfoot(*content, **attrs):
+Th(*content, **attrs):
+Thead(*content, **attrs):
+Tr(*content, **attrs):
+Button(*content, **attrs):
+Datalist(*content, **attrs):
+Fieldset(*content, **attrs):
+Form(*content, **attrs):
+Input(**attrs):
+Label(*content, **attrs):
+Legend(*content, **attrs):
+Meter(*content, **attrs):
+Optgroup(*content, **attrs):
+Option(*content, **attrs):
+Output(*content, **attrs):
+Progress(*content, **attrs):
+Select(*content, **attrs):
+Textarea(*content, **attrs):
 ```
 
 
