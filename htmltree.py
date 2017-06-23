@@ -137,14 +137,18 @@ class HtmlElement:
 
         ## Render the attributes
         if self.A is not None:
-            for a, v in self.A.items():
+            for _a, v in self.A.items():
                 ## for convenience, convert underscores in keys to '-'.
                 ## and remove any leading '-'. This allows us to specify
                 ## hyphenated attr names, like 'data-role' with data_role to avoid
                 ## needing quotes and allows the use of reserved Python words like 'class' by
                 ## prefixing (or suffixing) them with underscores, e.g. _class.
-                a = a.replace('_', '-') ## replace underscores with hyphens
-                a = a.strip('-')
+                a = _a.replace('_', '-').strip('-') ## replace underscores with hyphens
+                # Ugly hack until Transcrypt implemnts strip() correctly
+                while a.startswith('-'):
+                    a = a[1:]
+                while a.endswith('-'):
+                    a = a[:-1]
                 if isinstance(v, str):
                     rlist.append(' {}="{}"'.format(a,v))
                 elif v is None:
@@ -231,6 +235,11 @@ def renderInlineStyle(d):
             ## See note in HtmlElement.render() about underscore replacement.
             kh = k.replace('_', '-')
             kh = kh.strip('-')
+            # Ugly hack until Transcrypt implemnts strip() correctly
+            while kh.startswith('-'):
+                kh = kh[1:]
+            while kh.endswith('-'):
+                kh = kh[:-1]
             style.append("{}:{};".format(kh, v))
         separator = ' '
         result = separator.join(style)
