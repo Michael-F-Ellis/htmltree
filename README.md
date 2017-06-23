@@ -2,7 +2,7 @@
 
 ## Create and manipulate HTML and CSS from the comfort of Python
   * Easy to learn. Consistent, simple syntax.
-  * Over 70 predefined tag functions.
+  * 85 predefined tag functions.
   * Create HTML on the fly or save as static files.
   * Flexible usage and easy extension. 
   * Run locally with CPython or as Javascript in the browser using Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
@@ -10,10 +10,10 @@
 ### Quick Start
 #### Open a Python interpreter and type or paste the following
 ```
->>> from htmltree import *
->>> head = Head()
->>> body = Body()
->>> doc = Html(head, body)
+from htmltree import *
+head = Head()
+body = Body()
+doc = Html(head, body)
 ```
 #### Render and print the HTML
 ```
@@ -27,10 +27,11 @@
 ```
 #### Now add some metadata, styling and text ...
 ```
->>> who = Meta(name="author",content="Your Name Here")
->>> head.C.append(who)
->>> body.A.update(dict(style={'background-color':'black'}))
->>> body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
+who = Meta(name="author",content="Your Name Here")
+head.C.append(who)
+body.A.update(dict(style={'background-color':'black'}))
+banner = H1("Hello, htmltree!", _class='banner', style={'color':'green'})
+body.C.append(banner)
 ```
 #### and print the result.
 ```
@@ -40,35 +41,74 @@
     <meta content="Your Name Here" name="author">
   </head>
   <body style="background-color:black;">
-    <h1 id="myid" class="myclass">
+    <h1 class="banner" style="color:green;">
       Hello, htmltree!
     </h1>
   </body>
 </html>
 ```
+In the examples above, we created elements and assigned them to variables so we could alter their content later. However, we could also have written  it out all at once.
+
+```
+doc = Html(
+        Head(
+          Meta(name="author",content="Your Name Here")),
+        Body(
+          H1("Hello, htmltree!", _class='banner', style={'color':'green'}),
+          style={'background-color':'black'}))
+```
+
+That's short and clean and renders exactly the same html.  It also mimics the page structure but sacrifices ease of alteration later in the execution. Your choices should come down to whether you're creating static html or dynamic content based on information that's not available until run time.
+
+### Reserved words and hyphenated attributes
+Did you notice the underscore in `H1("Hello, htmltree!", _class='banner', ...)`? It's written that way because `class` is a Python keyword. Trying to use it as an identifier will raise a syntax error. 
+
+As a convenience, the render() function strips off leading and trailing underscores in attribute names, so `class_` would also work. Fortunately, HTML doesn't use underscores in attribute names so this fix is safe to use. I think `for` as a `<label>` attribute is the only other conflict in standard HTML.
+
+The render() function also replaces internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret `data-role="magic"` as a subtraction expression. Use `data_role="magic"` instead.
+
+### Viewing your work
+Use htmltree's `renderToFile` method and Python's standard `webbrowser` module.
+```
+import webbrowser
+fileurl = doc.renderToFile('path/to/somefile.html')
+webbrowser.open(fileurl)
+```
+
+The Quick Start example should look like this:
+
+![Figure 1.](doc/img/quickstart.png)
+
 ## Discussion
-Importing * from htmltree.py provides 72 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(htmltree)` from the command line of a Python interactive session or look futher down on this page for listing. The function names and arguments follow simple and consistent conventions.
+Importing * from htmltree.py provides 85 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(htmltree)` from the command line of a Python interactive session or look futher down on this page for a listing. The function names and arguments follow simple and consistent conventions that make use of Python's `*args, **kwargs`features.
 
 - Functions are named by tag with initial caps, e.g. `Html()`
 - The signature for non-empty tags is `Tagname(*content, **attrs)`
-- The signature for empty tags is `Tagname(**attrs)` (Empty refers to elements that enclose no content and need no closing tag.)
-- The <style> tag is the only exception. Its signature is `Style(**content)`.  This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
-- If you need to set attrs on a style element, do it in a secondary call as shown in the doctest below.
+- The signature for empty tags is `Tagname(**attrs)` (Empty refers to elements that enclose no content and need no closing tag -- like `<meta>`, `<br>`, etc.)
+
+To create, say, a div with two empty paragraphs separated by a horizontal rule element, you'd write
+
+```mydiv = Div(P(), Hr(), P(), id=42, name='puddintane')```
+
+Because the first three args are unnamed Python knows they belong, in order, `to *content`. The last two arguments are named and therefore belong to `**attrs`, the attributes of the div. Python's rules about not mixing list and keyword arguments apply. In every element, put all the *content args first, followed by all the **attrs arguments. 
+
+The <style> tag is the only exception to the pattern. Its signature is `Style(**content)`.  This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
+- If you need to set attributes on a style element, do it in a secondary call as shown in the doctest below.
 ```
-          >>> style = Style(body=dict(margin='4px'), p={'color':'blue'})
-          >>> style.A.update({'type':'text/css'})
-          >>> style.render()
+          style = Style(body=dict(margin='4px'), p=dict(color='blue'))
+          style.A.update({'type':'text/css'})
+          style.render()
           '<style type="text/css">body { margin:4px; } p { color:blue; }</style>' 
 ```
 The design pattern for `htmltree` is "as simple as possible but not simpler." Using built-in Python objects, dicts and lists, means that all the familiar methods of those objects are available when manipulating trees of Elements. Notice, for instance, the use of `update` and `append` in the Quick start examples. 
 ```
->>> body.A.update(dict(style={'background-color':'black'}))
->>> body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
+body.A.update(dict(style={'background-color':'black'}))
+body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
 ```
 But wait a minute! What are 'body.A' and 'body.C'? Read on ...
 
 ### Public members
-You can access and modify the attributes and content of an Element `el` as `el.A` and `el.C` respectively. The tagname is also available as `el.T` though this is generally not so useful as the other two. 
+You can access and modify the attributes and content of an element `el` as `el.A` and `el.C` respectively. The tagname is also available as `el.T` though this is generally not so useful as the other two. 
 
 The attribute member, `el.A` is an ordinary Python dictionary containing whatever keyword arguments were passed when the element was created. You can modify it with `update()` as shown in the Quick Start example or use any of the other dictionary methods on it. You can also replace it entirely with any dict-like object that has an `items()` method that behaves like dict.items()
 
@@ -95,20 +135,9 @@ The render method emits HMTL. In the examples above, we've called it as doc.rend
   </head>
 ```
 
+The `renderToFile()` method also excepts an `indent` argument.
 
-## Using and extending
-
-In the Quick Start example, we created elements and assigned them to variables so we could alter their content later. However, we could also have created the example by writing it out all at once.
-
-```
-doc = Html(
-        Head(
-          Meta(name="author",content="Your Name Here")),
-         Body(
-           H1("Hello, htmltree!",
-               id="myid", _class="myclass")))
-```
-That's short and clean and renders exactly the same html, but sacrifices ease of alteration later in the execution. Your choices should come down to whether you're creating static html or dynamic content based on information that's not available until run time.
+## Usage tips
 
 ### Rolling your own
 The simplest possible extension is wrapping a frequently used tag to save a little typing. This is already done for you for all the wrapper functions in htmltree.py. But if you need something that's not defined it only takes two lines of code (not counting the import).
@@ -124,7 +153,7 @@ def Bar(**attrs):
 ```
 
 ### Bundling
-Wrapping commonly used fragments in a function can be useful, e.g. 
+Wrapping commonly used fragments in a function is easy and useful, e.g. 
 ```
 def docheadbody():
     head = Head()
@@ -136,7 +165,7 @@ def docheadbody():
 ```
 
 ### Looping
-Python loops simplify the creation of many similar elements.
+Use loops to simplify the creation of many similar elements.
 ```
 for id in ('one', 'two', 'three'):
      content = "Help! I'm trapped in div {}.".format(id)
@@ -155,15 +184,14 @@ for id in ('one', 'two', 'three'):
   </div>
 </body>
 ```
-### Use with [*Transcrypt™*](https://transcrypt.org/)
-This project was designed from the ground up to be compatible with Transcrypt to help provide a pure Python development environment  for HTML/CSS on both sides of the client/server divide. You'll want to arrange for the htmltree.py file to be in or symbolically linked in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
+### Using *htmltree* with [*Transcrypt™*](https://transcrypt.org/)
+This project was designed from the ground up to be compatible with Transcrypt to create a pure Python development environment  for HTML/CSS/JS on both sides of the client/server divide.
+
+You'll want to arrange for the htmltree.py file to be in or symbolically linked in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
 
 Other than that, all the functions should work the same as under CPython. If not, please file an issue so I can fix it!
 
-### A small gotcha
-Did you notice the underscore in `H1("Hello, htmltree!", _class='myclass', id='myid')`? That's because `class` is a Python reserved word.  Prefixing it with an underscore avoids a syntax error. Class is the most common problem but you might also run into it with `for` as a label attribute. 
-
-To help deal with this, the render() function strips off leading and trailing underscores in attribute names. It also replaces internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret ` ... data-role="magic"` as a subtraction expression. Use ```data_role="magic"``` instead.
+Also, look at the modules `sanitycheck.py` and `client.py` in the `tests/` directory as a template for developing and testing with htmltree and Transcrypt. For a more elaborate template with a built-in server, AJAX/JSON data updates and automatic rebuild/reload when source files change, see [NearlyPurePythonWebAppDemo](https://github.com/Michael-F-Ellis/NearlyPurePythonWebAppDemo)
 
 
 ## List of wrapper functions

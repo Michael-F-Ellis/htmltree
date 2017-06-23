@@ -38,8 +38,7 @@ doc = Html(head, body)
 print("Writing sanitycheck.html ...")
 if not os.path.exists("__html__"):
     os.makedirs("__html__")
-with open('__html__/sanitycheck.html', 'w') as f:
-    print(doc.render(0), file=f)
+fileurl = doc.renderToFile('__html__/sanitycheck.html')
 
 print("Building client.js")
 proc = subprocess.Popen('transcrypt -b -n -m client.py', shell=True)
@@ -48,4 +47,4 @@ if proc.wait() != 0:
 
 print("Build complete. Opening sanitycheck.html in browser ...")
 path = os.path.abspath("__html__/sanitycheck.html")
-webbrowser.open("file://" + path)
+webbrowser.open(fileurl)

@@ -31,8 +31,7 @@ def KWElement(tag, *content, **attrs):
     if len(content) == 1 and content[0] is None:
         content = None
     else:
-        pass
-        #content = list(content)
+        content = list(content)
     return HtmlElement(tag, attrs, content)
 
 class HtmlElement:
@@ -186,6 +185,18 @@ class HtmlElement:
         rlist.append(closing)
 
         return ''.join(rlist)
+
+    #__pragma__('skip')
+    def renderToFile(self, filepath, indent=-1):
+        """
+        Render to a local file and return a "file://" url for convenient display.
+        Note: This method has no meaning under Transcrypt and is not compiled.
+        """
+        import os
+        with open(filepath, 'w') as f:
+            print(self.render(indent=indent), file=f)
+        return "file://" + os.path.abspath(filepath)
+    #__pragma__('noskip')
 
 def indented(contentstring, indent=-1):
     """
