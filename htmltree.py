@@ -247,23 +247,18 @@ def renderInlineStyle(d):
 
 def renderCss(d, indent=-1):
     """
-    If d is a dict (or dict-like object) of rulesets, render a string of CSS
-    rulesets.
+    Render a string of CSS rulesets from d, a dict (or dict-like object) of
+    rulesets,.
     """
-    if not hasattr(d, 'items'):
-        msg = "Expected dictionary of CSS rulesets, got {}.".format(d)
-        raise TypeError(msg)
-    else:
-        rulesetlist = []
-        for selector, declaration in d.items():
-            if not isinstance(selector, str):
-                msg = "Expected selector string, got {}".format(selector)
-                raise TypeError(msg)
-
-            ruleset = " ".join([selector, '{',
-                                renderInlineStyle(declaration), '}'])
-            rulesetlist.append(indented(ruleset, indent))
-        return ' '.join(rulesetlist)
+    rulesetlist = []
+    for selector, declaration in d.items():
+        ruleset = " ".join([selector,
+                            '{',
+                            renderInlineStyle(declaration),
+                            '}'
+                            ])
+        rulesetlist.append(indented(ruleset, indent))
+    return ' '.join(rulesetlist)
 
 
 
