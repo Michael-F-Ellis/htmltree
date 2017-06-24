@@ -117,7 +117,7 @@ The content member, `el.C` is normally a Python list. It contains all the stuff 
 (If you insert objects (other than those listed above), they should have a `render(indent=-1)` method that returns valid HTML with the same indentation conventions as the htmltree.Element.render method described in the next section.)
 
 ### Rendering
-The render method emits HMTL. In the examples above, we've called it as doc.render(0) to display the entire document tree in indented form. Calling it with no arguments emits the HTML as a single line with no breaks or spaces. Values > 0 increase the indentations by 2 spaces * the value.
+The render method emits HTML. In the examples above, we've called it as doc.render(0) to display the entire document tree in indented form. Calling it with no arguments emits the HTML as a single line with no breaks or spaces. Values > 0 increase the indentations by 2 spaces * the value.
 ```
 >>> print(head.render())
 <head><meta name="author" content="Your Name Here"/></head>
