@@ -6,8 +6,12 @@
   * Create HTML on the fly or save as static files.
   * Flexible usage and easy extension. 
   * Run locally with CPython or as Javascript in the browser using Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
+  * Dependencies: Python 3.x
 
 ### Quick Start
+### Installation
+`pip install htmltree`
+
 #### Open a Python interpreter and type or paste the following
 ```
 from htmltree import *
@@ -135,7 +139,7 @@ The render method emits HTML. In the examples above, we've called it as doc.rend
   </head>
 ```
 
-The `renderToFile()` method also excepts an `indent` argument.
+The `renderToFile()` method also accepts an `indent` argument.
 
 ## Usage tips
 
@@ -187,11 +191,13 @@ for id in ('one', 'two', 'three'):
 ### Using *htmltree* with [*Transcrypt™*](https://transcrypt.org/)
 This project was designed from the ground up to be compatible with Transcrypt to create a pure Python development environment  for HTML/CSS/JS on both sides of the client/server divide.
 
-You'll want to arrange for the htmltree.py file to be in or symbolically linked in the same directory as any other python files to be transpiled as part of your project. That's a current limitation of Transcrypt. It's on the list of issues at the Transcrypt repo and the author, Jacques de Hooge, has it on his list of upcoming enhancements. 
-
-Other than that, all the functions should work the same as under CPython. If not, please file an issue so I can fix it!
+If you've installed *htmltree* with `pip`, Transcrypt will find it when transpiling your Python files to JavaScript if you import it as `htmltree`. If you have a need to install and access *htmltree* by other means,  see 
+  * http://www.transcrypt.org/docs/html/special_facilities.html for information about Transcrypt's module mechanism and 
+  * https://github.com/Michael-F-Ellis/htmltree/issues/3 for a discussion of some specific ways to locate htmltree at compile time.
 
 Also, look at the modules `sanitycheck.py` and `client.py` in the `tests/` directory as a template for developing and testing with htmltree and Transcrypt. For a more elaborate template with a built-in server, AJAX/JSON data updates and automatic rebuild/reload when source files change, see [NearlyPurePythonWebAppDemo](https://github.com/Michael-F-Ellis/NearlyPurePythonWebAppDemo)
+
+All the functions should work the same as under CPython. If not, please submit an issue on GitHub so I can fix it!
 
 
 ## List of wrapper functions
