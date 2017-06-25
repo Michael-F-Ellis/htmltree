@@ -77,7 +77,7 @@ webbrowser.open(fileurl)
 
 The Quick Start example should look like this:
 
-![Figure 1.](doc/img/quickstart.png)
+![Figure 1.](htmltree/doc/img/quickstart.png)
 
 ## Discussion
 Importing * from htmltree.py provides 85 wrapper functions (as of this writing) that cover the most of the common non-obsolete HTML5 tags.  To see the most up-to-date list you can do `help(htmltree)` from the command line of a Python interactive session or look futher down on this page for a listing. The function names and arguments follow simple and consistent conventions that make use of Python's `*args, **kwargs`features.
