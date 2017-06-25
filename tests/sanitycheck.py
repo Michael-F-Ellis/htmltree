@@ -41,7 +41,7 @@ if not os.path.exists("__html__"):
 fileurl = doc.renderToFile('__html__/sanitycheck.html')
 
 print("Building client.js")
-proc = subprocess.Popen('transcrypt -b -n -m client.py', shell=True)
+proc = subprocess.Popen('transcrypt -b -n -m -v client.py', shell=True)
 if proc.wait() != 0:
     raise Exception("Failed trying to build client.js")
 
