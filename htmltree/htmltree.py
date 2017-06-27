@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Description: Provides a general html tree class, HtmlElement (often imported as E).
+Description: Provides a general html tree class, HtmlElement and wrapper
+functions for most standard non-obsolete HTML tags.
 
-This file is part of NearlyPurePythonWebAppDemo
-https://github.com/Michael-F-Ellis/NearlyPurePythonWebAppDemo
+This file is part of htmltree
+https://github.com/Michael-F-Ellis/htmltree
 
 Compatibilty with Transcrypt Python to JS transpiler:
     By design, this module is intended for use with both CPython and
@@ -32,7 +33,33 @@ def KWElement(tag, *content, **attrs):
         content = None
     else:
         content = list(content)
-    return HtmlElement(tag, attrs, content)
+    return HtmlElement(tag, convertAttrKeys(attrs), content)
+
+def convertAttrKeys(attrdict):
+    """
+    Convert underscores to minus signs ('-').  Remove one trailing minus sign if present.
+    If no trailing minus signs, remove one leading minus sign.
+    >>> convertAttrKeys({'_class':'foo'})
+    {'class': 'foo'}
+    >>> convertAttrKeys({'class_':'foo'})
+    {'class': 'foo'}
+    >>> convertAttrKeys({'data_role':'foo'})
+    {'data-role': 'foo'}
+    >>> convertAttrKeys({'_moz_style_':'foo'})
+    {'-moz-style': 'foo'}
+    """
+    newdict = {}
+    for k, v in attrdict.items():
+        ## Replace all underscores with '-'
+        k = k.replace('_', '-')
+        if k.endswith('-'):
+            ## Drop trailing '-'
+            k = k[:-1].replace('_','-')
+        elif k.startswith('-'):
+            ## Drop leading '-'
+            k = k[1:]
+        newdict[k] = v
+    return newdict
 
 class HtmlElement:
     """
@@ -137,18 +164,7 @@ class HtmlElement:
 
         ## Render the attributes
         if self.A is not None:
-            for _a, v in self.A.items():
-                ## for convenience, convert underscores in keys to '-'.
-                ## and remove any leading '-'. This allows us to specify
-                ## hyphenated attr names, like 'data-role' with data_role to avoid
-                ## needing quotes and allows the use of reserved Python words like 'class' by
-                ## prefixing (or suffixing) them with underscores, e.g. _class.
-                a = _a.replace('_', '-').strip('-') ## replace underscores with hyphens
-                # Ugly hack until Transcrypt implemnts strip() correctly
-                while a.startswith('-'):
-                    a = a[1:]
-                while a.endswith('-'):
-                    a = a[:-1]
+            for a, v in self.A.items():
                 if isinstance(v, str):
                     rlist.append(' {}="{}"'.format(a,v))
                 elif v is None:

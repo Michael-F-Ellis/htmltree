@@ -67,9 +67,13 @@ That's short and clean and renders exactly the same html.  It also mimics the pa
 ### Reserved words and hyphenated attributes
 Did you notice the underscore in `H1("Hello, htmltree!", _class='banner', ...)`? It's written that way because `class` is a Python keyword. Trying to use it as an identifier will raise a syntax error. 
 
-As a convenience, the render() function strips off leading and trailing underscores in attribute names, so `class_` would also work. Fortunately, HTML doesn't use underscores in attribute names so this fix is safe to use. I think `for` as a `<label>` attribute is the only other conflict in standard HTML.
+As a convenience, all the wrapper functions strip off leading and trailing underscores in attribute names, so `class_` would also work. Normal HTML doesn't use underscores in attribute names so this fix is safe to use. I think `for` as a `<label>` attribute is the only other conflict in standard HTML.
 
-The render() function also replaces internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret `data-role="magic"` as a subtraction expression. Use `data_role="magic"` instead.
+The wrapper functions also replace internal underscores in attribute names with dashes. That avoids the problem of Python trying to interpret `data-role="magic"` as a subtraction expression. Use `data_role="magic"` instead. If you need to style with vendor-specific attributes that begin with a '-', add a trailing underscore, e.g. `_moz_style_` is converted to `-moz-style`.
+
+*The conversion happens when the element is created, not when it is rendered.* If you add, update or replace an element attribute after it is created, use the attribute's true name, e.g. `mybutton.A.update({'class': 'super-button'})` rather than `mybutton.A.update(dict(_class='super-button'))`.
+
+
 
 ### Viewing your work
 Use htmltree's `renderToFile` method and Python's standard `webbrowser` module.
