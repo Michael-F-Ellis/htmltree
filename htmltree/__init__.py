@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from .htmltree import *
+from htmltree.htmltree import *
