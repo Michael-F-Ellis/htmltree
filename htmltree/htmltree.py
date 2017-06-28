@@ -28,6 +28,8 @@ def KWElement(tag, *content, **attrs):
     """
     It's recommended to import this function rather than the HtmlElement class it wraps.
     This function's signature reduces the need to quote attribute names.
+    >>> KWElement('p', "hello", style=dict(_moz_style_="foo")).render()
+    '<p style="-moz-style:foo;">hello</p>'
     """
     if len(content) == 1 and content[0] is None:
         content = None
@@ -58,7 +60,11 @@ def convertAttrKeys(attrdict):
         elif k.startswith('-'):
             ## Drop leading '-'
             k = k[1:]
-        newdict[k] = v
+
+        if k == 'style':
+            newdict[k] = convertAttrKeys(v)
+        else:
+            newdict[k] = v
     return newdict
 
 class HtmlElement:
@@ -248,15 +254,7 @@ def renderInlineStyle(d):
     else:
         style=[]
         for k,v in d.items():
-            ## See note in HtmlElement.render() about underscore replacement.
-            kh = k.replace('_', '-')
-            kh = kh.strip('-')
-            # Ugly hack until Transcrypt implemnts strip() correctly
-            while kh.startswith('-'):
-                kh = kh[1:]
-            while kh.endswith('-'):
-                kh = kh[:-1]
-            style.append("{}:{};".format(kh, v))
+            style.append("{}:{};".format(k, v))
         separator = ' '
         result = separator.join(style)
     return result
@@ -379,8 +377,15 @@ def Style(**content):
     >>> b = '<style type="text/css">p { color:blue; } body { margin:4px; }</style>'
     >>> html in (a,b) # order is indeterminate, so test both ways
     True
+    >>> Style(body=dict(_moz_style_='foo')).render()
+    '<style>body { -moz-style:foo; }</style>'
     """
-    return HtmlElement('style', {}, content)
+    ## convert selectors
+    _ = convertAttrKeys(content)
+    newcontent = {}
+    for k, v in _.items():
+        newcontent[k] = convertAttrKeys(v)
+    return HtmlElement('style', {}, newcontent)
 
 #######################################################################
 ## Content Sectioning
