@@ -1,3 +1,24 @@
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [Python htmltree project](#)
+	- [Create and manipulate HTML and CSS from the comfort of Python](#)
+		- [Quick Start](#)
+		- [Installation](#)
+			- [Open a Python interpreter and type or paste the following](#)
+			- [Render and print the HTML](#)
+			- [Now add some metadata, styling and text ...](#)
+			- [and print the result.](#)
+		- [Reserved words and hyphenated attributes](#)
+		- [Viewing your work](#)
+	- [Discussion](#)
+		- [Public members](#)
+		- [Rendering](#)
+	- [Usage tips](#)
+		- [Rolling your own](#)
+		- [Bundling](#)
+		- [Looping](#)
+		- [Using htmltree with Transcrypt™](#)
+	- [List of wrapper functions](#)
 # Python htmltree project
 
 ## Create and manipulate HTML and CSS from the comfort of Python
