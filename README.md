@@ -1,24 +1,24 @@
 **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
-- [Python htmltree project](#)
-	- [Create and manipulate HTML and CSS from the comfort of Python](#)
-		- [Quick Start](#)
-		- [Installation](#)
-			- [Open a Python interpreter and type or paste the following](#)
-			- [Render and print the HTML](#)
-			- [Now add some metadata, styling and text ...](#)
-			- [and print the result.](#)
-		- [Reserved words and hyphenated attributes](#)
-		- [Viewing your work](#)
-	- [Discussion](#)
-		- [Public members](#)
-		- [Rendering](#)
-	- [Usage tips](#)
-		- [Rolling your own](#)
-		- [Bundling](#)
-		- [Looping](#)
-		- [Using htmltree with Transcrypt™](#)
-	- [List of wrapper functions](#)
+- [Python htmltree project](#python-htmltree-project)
+	- [Create and manipulate HTML and CSS from the comfort of Python](#create-and-manipulate-html-and-css-from-the-comfort-of-python)
+		- [Installation](#installation)
+		- [Quick Start](#quick-start)
+			- [Open a Python interpreter and type or paste the following](#open-a-python-interpreter-and-type-or-paste-the-following)
+			- [Render and print the HTML](#render-and-print-the-html)
+			- [Now add some styling and text ...](#now-add-some-styling-and-text)
+			- [and print the result.](#and-print-the-result)
+		- [Reserved words and hyphenated attributes](#reserved-words-and-hyphenated-attributes)
+		- [Viewing your work](#viewing-your-work)
+	- [Discussion](#discussion)
+		- [Public members](#public-members)
+		- [Rendering](#rendering)
+	- [Usage tips](#usage-tips)
+		- [Rolling your own](#rolling-your-own)
+		- [Bundling](#bundling)
+		- [Looping](#looping)
+		- [Using htmltree with Transcrypt™](#using-htmltree-with-transcrypt)
+	- [List of wrapper functions](#list-of-wrapper-functions)
 # Python htmltree project
 
 ## Create and manipulate HTML and CSS from the comfort of Python
@@ -29,9 +29,10 @@
   * Run locally with CPython or as Javascript in the browser using Jacques De Hooge's [*Transcrypt™*](https://transcrypt.org/) Python to JS transpiler
   * Dependencies: Python 3.x
 
-### Quick Start
 ### Installation
 `pip install htmltree`
+
+### Quick Start
 
 #### Open a Python interpreter and type or paste the following
 ```
@@ -50,7 +51,7 @@ doc = Html(head, body)
   </body>
 </html>
 ```
-#### Now add some metadata, styling and text ...
+#### Now add some styling and text
 ```
 who = Meta(name="author",content="Your Name Here")
 head.C.append(who)
@@ -213,7 +214,7 @@ for id in ('one', 'two', 'three'):
   </div>
 </body>
 ```
-### Using *htmltree* with [*Transcrypt™*](https://transcrypt.org/)
+### Using *htmltree* with [*Transcrypt*](https://transcrypt.org/)
 This project was designed from the ground up to be compatible with Transcrypt to create a pure Python development environment  for HTML/CSS/JS on both sides of the client/server divide.
 
 If you've installed *htmltree* with `pip`, Transcrypt will find it when transpiling your Python files to JavaScript if you import it as `htmltree`. If you have a need to install and access *htmltree* by other means,  see 
