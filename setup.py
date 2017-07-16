@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from distutils.core import setup
-with open('README.md') as file:
+with open('README.md', encoding="utf8") as file:
     long_description = file.read()
 setup(
   name = 'htmltree',
