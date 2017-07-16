@@ -5,7 +5,7 @@ with open('README.md', encoding="utf8") as file:
 setup(
   name = 'htmltree',
   packages = ['htmltree'], # this must be the same as the name above
-  version = '0.7.5',
+  version = '0.7.6',
   description = 'Generalized nested html element tree with recursive rendering',
   long_description = long_description,
   author = 'Michael F. Ellis',
