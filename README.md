@@ -18,6 +18,7 @@
 		- [Bundling](#bundling)
 		- [Looping](#looping)
 		- [Using htmltree with Transcrypt™](#using-htmltree-with-transcrypt)
+		- [Writing CSS](#writing-css)
 	- [List of wrapper functions](#list-of-wrapper-functions)
 # Python htmltree project
 
@@ -120,7 +121,9 @@ To create, say, a div with two empty paragraphs separated by a horizontal rule e
 
 ```mydiv = Div(P(), Hr(), P(), id=42, name='puddintane')```
 
-Because the first three args are unnamed Python knows they belong, in order, `to *content`. The last two arguments are named and therefore belong to `**attrs`, the attributes of the div. Python's rules about not mixing list and keyword arguments apply. In every element, put all the *content args first, followed by all the **attrs arguments. 
+Because the first three args are unnamed Python knows they belong, in order, `to *content`. The last two arguments are named and therefore belong to `**attrs`, the attributes of the div. 
+
+Python's rules about not mixing list and keyword arguments apply. In every element, put all the *content args first, followed by all the **attrs arguments. 
 
 The <style> tag is the only exception to the pattern. Its signature is `Style(**content)`.  This is done to reduce (but alas not completely eliminate) the need for quoting the selectors in CSS rulesets.
 - If you need to set attributes on a style element, do it in a secondary call as shown in the doctest below.
@@ -130,12 +133,14 @@ The <style> tag is the only exception to the pattern. Its signature is `Style(**
           style.render()
           '<style type="text/css">body { margin:4px; } p { color:blue; }</style>' 
 ```
+- See [Writing CSS](#writing-css) later in this document for more dicussion of `Style()`.
+
 The design pattern for `htmltree` is "as simple as possible but not simpler." Using built-in Python objects, dicts and lists, means that all the familiar methods of those objects are available when manipulating trees of Elements. Notice, for instance, the use of `update` and `append` in the Quick start examples. 
 ```
 body.A.update(dict(style={'background-color':'black'}))
 body.C.append(H1("Hello, htmltree!", _class='myclass', id='myid'))
 ```
-But wait a minute! What are 'body.A' and 'body.C'? Read on ...
+But wait a minute! What are `body.A` and `body.C`? Read on ...
 
 ### Public members
 You can access and modify the attributes and content of an element `el` as `el.A` and `el.C` respectively. The tagname is also available as `el.T` though this is generally not so useful as the other two. 
@@ -144,7 +149,7 @@ The attribute member, `el.A` is an ordinary Python dictionary containing whateve
 
 The content member, `el.C` is normally a Python list. It contains all the stuff that gets rendered between the closing and ending tags of an element. The list may hold an arbitrary mix of strings, ints, float, and objects. In normal usage, the objects are of type `htmltree.Element`. This is the element type returned by all the functions in htmltree.py. You can use all the normal Python list methods (append, insert, etc) to manipulate the list.
 
-(If you insert objects (other than those listed above), they should have a `render(indent=-1)` method that returns valid HTML with the same indentation conventions as the htmltree.Element.render method described in the next section.)
+(If you insert objects (other than those listed above), they should have a `render(indent=-1)` method that returns valid HTML with the same indentation conventions as the `htmltree.Element.render` method described in the next section.)
 
 ### Rendering
 The render method emits HTML. In the examples above, we've called it as doc.render(0) to display the entire document tree in indented form. Calling it with no arguments emits the HTML as a single line with no breaks or spaces. Values > 0 increase the indentations by 2 spaces * the value.
@@ -225,7 +230,58 @@ Also, look at the modules `sanitycheck.py` and `client.py` in the `tests/` direc
 
 All the functions should work the same as under CPython. If not, please submit an issue on GitHub so I can fix it!
 
+### Writing CSS
 
+Use the Style() element to create CSS rulesets for your HTML, for example
+```
+>>> mystyle = Style(h2=dict(margin_top='4px', color='red'))
+>>> doc = Html(Head(mystyle), Body(H2("Hello!")))
+>>> print(doc.render(0))
+
+<html>
+  <head>
+    <style>
+    h2 { color:red; margin-top:4px; }
+    </style>
+  </head>
+  <body>
+    <h2>
+      Hello!
+    </h2>
+  </body>
+</html>
+```
+
+#### Interlude: dict() vs {}
+In python, `{}` and `dict()` both define dictionaries. The difference is that dict treats keyword arguments as strings, so
+```
+>>> {'foo':1, 'bar':2} == dict(foo=1, bar=2)
+True
+```
+Using `dict()` with keyword arguments saves having to quote keywords and `htmltree` tries to help by converting underscores in keywords to hyphens (as discussed earlier in this document).  On the other hand, the CSS selector syntax permits strings that are not valid Python keywords, so the best practice for non-trivial rulesets is to create a dictionary of dictionaries, as shown below, and supply that as the argument to Style(). *Don't forget the two asterisks in front!*
+```
+mycss = {
+          'a.someclass' : {'color':'red', 'margin-top':'0.5em !important'},
+          'div p #id:first-line' : {'background-style': 'none'}
+        }
+mystyle = Style(**mycss) ## Don't forget the two asterisks in front
+
+>>> print(mystyle.render(0))
+<style>
+div p #id:first-line { background-style:none; }
+a.someclass { color:red; margin-top:0.5em !important; }
+</style>
+```
+
+If you compare the dictionary definition of `mycss` with the rendered css
+output, you'll see that the differences are as follows:
+
+  1. Quote every item,
+  2. A colon between each selector and its property/value pairs,
+  3. A comma after each rule definition,
+  4. Separate property:value pairs with commas instead of semicolons.
+#### Caveat: dictionaries are unordered
+When two CSS selectors apply with equal specificity to the same property of an element, [the last one wins](http://monc.se/kitchen/38/cascading-order-and-inheritance-in-css). You should not rely on the Style() object to render rules in any particular order because Python dictionaries are, by definition, unordered collections.
 ## List of wrapper functions
 ```
 Html(*content, **attrs):
