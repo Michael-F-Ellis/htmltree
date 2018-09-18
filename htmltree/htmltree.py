@@ -1054,6 +1054,251 @@ def Textarea(*content, **attrs):
     return KWElement('textarea', *content, **attrs)
 
 #######################################################################
+## HTML parser
+#######################################################################
+
+# Global variables
+__tagsDict = None
+
+def __buildTagsDict():
+    """
+    Internal function for building a mapping of all available tags.
+    """
+    global __tagsDict
+
+    __tagsDict = {}
+    mod = __import__(__name__)
+
+    for clname in dir(mod):
+        cl = getattr(mod, clname)
+        if clname[0] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" or not callable(cl) or cl is HtmlElement or cl is KWElement:
+            continue
+
+        try:
+            inst = cl()
+            if issubclass(inst.__class__, HtmlElement):
+                __tagsDict[cl.__name__.lower()] = cl
+        except:
+            pass
+
+    #print(__tagsDict)
+
+def parseHtml(html):
+    """
+	Parses the provided HTML code according to the objects defined in the htmltree-library.
+	"""
+
+    def scanWhite(l):
+        """
+		Scan and return whitespace.
+		"""
+
+        ret = ""
+        while l and l[0] in " \t\r\n\v":
+            ret += l.pop(0)
+
+        return ret
+
+    def scanWord(l):
+        """
+		Scan and return a word.
+		"""
+
+        ret = ""
+        while l and l[0] not in " \t\r\n\v" + "<>=\"'":
+            ret += l.pop(0)
+
+        return ret
+
+    def buildElem(elem):
+        try:
+            elem = elem[0](*elem[3], **elem[2])
+        except:
+            print(elem[2])
+            elem = elem[0](**elem[2])
+
+        return elem
+
+    global __tagsDict
+
+    # Obtain tag descriptions
+    if __tagsDict is None:
+        __buildTagsDict()
+
+    # Prepare stack and input
+    stack = []
+    ret = []
+    html = [ch for ch in html]
+
+    # Parse
+    while html:
+        tag = None
+        text = ""
+
+        # ugly...
+        singles = []
+        while stack and stack[-1][1] in ["br", "input", "img", "meta"]:
+            singles.append(buildElem(stack.pop()))
+
+        if stack:
+            stack[-1][3].extend(singles)
+        else:
+            ret.extend(singles)
+
+        while html:
+            #print("html", html)
+            #print(stack)
+
+            ch = html.pop(0)
+
+            # Comment
+            if html and ch == "<" and "".join(html[:3]) == "!--":
+                html = html[3:]
+                while html and "".join(html[:3]) != "-->":
+                    html.pop(0)
+
+                html = html[3:]
+
+            # Opening tag
+            elif html and ch == "<" and html[0] != "/":
+                # Append plain text (if not only whitespace)
+                if (text and ((len(text) == 1 and text in ["\t "])
+                              or not all([ch in " \t\r\n\v" for ch in text]))):
+                    if stack:
+                        stack[-1][3].append(text)
+                    else:
+                        ret.append(text)
+
+                tag = scanWord(html)
+                if tag.lower() in __tagsDict:
+                    break
+
+                text += ch + tag
+
+            # Closing tag
+            elif html and stack and stack[-1][1] and ch == "<" and html[0] == "/":
+                # Append plain text (if not only whitespace)
+                if (text and ((len(text) == 1 and text in ["\t "])
+                              or not all([ch in " \t\r\n\v" for ch in text]))):
+                    if stack:
+                        stack[-1][3].append(text)
+                    else:
+                        ret.append(text)
+
+                junk = ch
+                junk += html.pop(0)
+
+                tag = scanWord(html)
+                junk += tag
+
+                # print("/", tag.lower(), stack[-1][1].lower())
+                if stack[-1][1].lower() == tag.lower():
+                    junk += scanWhite(html)
+                    if html and html[0] == ">":
+                        html.pop(0)
+
+                        elem = buildElem(stack.pop())
+
+                        if not stack:
+                            ret.append(elem)
+                        else:
+                            stack[-1][3].append(elem)
+
+                        tag = None
+                        break
+
+                text += junk
+                tag = None
+
+            else:
+                text += ch
+
+        # Create tag
+        if tag and tag.lower() in __tagsDict:
+            #print(tag)
+            stack.append((__tagsDict[tag.lower()], tag.lower(), {}, []))
+
+            # print("tag", tag)
+
+            while html:
+                scanWhite(html)
+                if not html:
+                    break
+
+                # End of tag >
+                if html[0] == ">":
+                    html.pop(0)
+                    break
+
+                # Closing tag at end />
+                elif html[0] == "/":
+                    html.pop(0)
+                    scanWhite(html)
+
+                    if html[0] == ">":
+                        elem = buildElem(stack.pop())
+
+                        if not stack:
+                            ret.append(elem)
+                        else:
+                            stack[-1][3].append(elem)
+
+                        html.pop(0)
+                        break
+
+                att = scanWord(html).lower()
+                val = att
+
+                if not att:
+                    html.pop(0)
+                    continue
+
+                # Attribute
+                scanWhite(html)
+                if html[0] == "=":
+                    html.pop(0)
+                    scanWhite(html)
+
+                    if html[0] in "\"'":
+                        ch = html.pop(0)
+
+                        val = ""
+                        while html and html[0] != ch:
+                            val += html.pop(0)
+
+                        html.pop(0)
+
+                if att == "style":
+                    if "style" not in stack[-1][2]:
+                        stack[-1][2]["style"] = {}
+
+                    for dfn in val.split(";"):
+                        if not ":" in dfn:
+                            continue
+
+                        att, val = dfn.split(":", 1)
+
+                        # print(tag, "style", att.strip(), val.strip())
+                        stack[-1][2]["style"][att.strip()] = val.strip()
+                else:
+                    stack[-1][2][att] = val
+
+                continue
+
+    # Unclosed tags?
+    while stack:
+        ret.append(buildElem(stack.pop()))
+
+    if ret:
+        if len(ret) > 1:
+            return ret
+
+        return ret[0]
+
+    return None
+
+
+#######################################################################
 ## Interactive Elememts (Experimental. Omitted for now.)
 #######################################################################
 
@@ -1071,6 +1316,20 @@ def Textarea(*content, **attrs):
 
 # __pragma__ ('skip')
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
+    #import doctest
+    #doctest.testmod()
+    #print(parseHtml(open("test.html", "r").read()).render())
+    print(parseHtml("""
+    <html>
+      <head>
+        <meta content="Your Name Here" name="author">
+      </head>
+      <body style="background-color:black;">
+        <h1 class="banner" style="color:green;">
+          Hello, htmltree!
+        </h1>
+      </body>
+    </html>
+    """).render())
+
 # __pragma__ ('noskip')
