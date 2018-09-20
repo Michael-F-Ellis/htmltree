@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+
+# __pragma__('kwargs')
+# __pragma__('xglobs')
+# __pragma__('tconv')
+# __pragma__('opov')
+
 """
 Description: Provides a general html tree class, HtmlElement and wrapper
 functions for most standard non-obsolete HTML tags.
@@ -22,7 +28,7 @@ Author: Michael Ellis
 Copyright 2017 Ellis & Grant, Inc.
 License: MIT License
 """
-# __pragma__('kwargs')
+
 
 def KWElement(tag, *content, **attrs):
     """
@@ -1065,23 +1071,24 @@ def __buildTagsDict():
     Internal function for building a mapping of all available tags.
     """
     global __tagsDict
-
     __tagsDict = {}
-    mod = __import__(__name__)
 
-    for clname in dir(mod):
-        cl = getattr(mod, clname)
-        if clname[0] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" or not callable(cl) or cl is HtmlElement or cl is KWElement:
+    for cname in globals().keys():
+        if cname[0] not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ":
             continue
+
+        cl = globals()[cname]
 
         try:
             inst = cl()
-            if issubclass(inst.__class__, HtmlElement):
-                __tagsDict[cl.__name__.lower()] = cl
+
+            if isinstance(inst, HtmlElement):
+                __tagsDict[cname.lower()] = cl
+
         except:
             pass
 
-    #print(__tagsDict)
+    # print(__tagsDict)
 
 def parseHtml(html):
     """
@@ -1246,7 +1253,8 @@ def parseHtml(html):
                         html.pop(0)
                         break
 
-                att = scanWord(html).lower()
+                att = scanWord(html)
+                att = att.lower() #fixme: This is split into two lines due to a Transcrypt bug
                 val = att
 
                 if not att:
@@ -1306,7 +1314,6 @@ def parseHtml(html):
 ## Web Components (Experimental. Omitted for now.)
 #######################################################################
 
-# __pragma__('nokwargs')
 
 ## The 'skip' pragma tells the Transcrypt Python to JS transpiler to
 ## ignore a section of code. It's needed here because the 'run as script'
@@ -1314,11 +1321,8 @@ def parseHtml(html):
 ## Putting the pragmas in comments means they'll be ignored and cause no
 ## problems in a real python interpreter.
 
-# __pragma__ ('skip')
+
 if __name__ == '__main__':
-    #import doctest
-    #doctest.testmod()
-    #print(parseHtml(open("test.html", "r").read()).render())
     print(parseHtml("""
     <html>
       <head>
@@ -1331,5 +1335,3 @@ if __name__ == '__main__':
       </body>
     </html>
     """).render())
-
-# __pragma__ ('noskip')
