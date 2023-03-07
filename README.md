@@ -170,7 +170,33 @@ The render method emits HTML. In the examples above, we've called it as doc.rend
   </head>
 ```
 
-The `renderToFile()` method also accepts an `indent` argument.
+To include the `<!DOCTYPE html>` declaration and the beginning of the document, you can use the flag, `doctype_declaration`.
+```
+>>> print(doc.render(doctype_declaration=True))
+<!DOCTYPE html><html><head></head><body></body></html>
+
+>>> print(doc.render(0, doctype_declaration=True))
+
+<!DOCTYPE html>
+<html>
+  <head>
+  </head>
+  <body>
+  </body>
+</html>
+
+>>> print(doc.render(1, doctype_declaration=True))
+
+  <!DOCTYPE html>
+  <html>
+    <head>
+    </head>
+    <body>
+    </body>
+  </html>
+```
+
+The `renderToFile()` method also accepts the `indent` and `doctype_declaration` arguments.
 
 ## Usage tips
 
