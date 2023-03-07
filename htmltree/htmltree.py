@@ -161,7 +161,7 @@ class HtmlElement:
         self.A = attrs
         self.C = content
 
-    def render(self, indent=-1):
+    def render(self, indent=-1, doctype_declaration=False):
         """ Recursively generate html """
         rlist = []
         ## Render the tag with attributes
@@ -210,17 +210,20 @@ class HtmlElement:
             closing = indented(self.endtag, indent)
         rlist.append(closing)
 
-        return ''.join(rlist)
+        if not doctype_declaration:
+            return ''.join(rlist)
+        else:
+            return indented("<!DOCTYPE html>", indent) + ''.join(rlist)
 
     #__pragma__('skip')
-    def renderToFile(self, filepath, indent=-1):
+    def renderToFile(self, filepath, indent=-1, doctype_declaration=False):
         """
         Render to a local file and return a "file://" url for convenient display.
         Note: This method has no meaning under Transcrypt and is not compiled.
         """
         import os
         with open(filepath, 'w') as f:
-            print(self.render(indent=indent), file=f)
+            print(self.render(indent=indent, doctype_declaration=doctype_declaration), file=f)
         return "file://" + os.path.abspath(filepath)
     #__pragma__('noskip')
 
